@@ -2,12 +2,12 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
-
+// Таблица для отображеняи данных клиентов
 Item {
     id: root
+    anchors.fill: parent
     property var models: null
     property var onClickRow : null
-    implicitHeight: 900
 
     HorizontalHeaderView {
         id: horizontalHeader
@@ -31,10 +31,9 @@ Item {
 
         model: root.models
 
-        columnWidthProvider: function(column) { return 125}
+        columnWidthProvider: function(column) { return root.width / models.columnCount() }
 
         delegate: Item {
-            width: 120
             implicitHeight: 40
 
             Label {
@@ -68,6 +67,5 @@ Item {
                 }
             }
         }
-        onWidthChanged: forceLayout()
     }
 }

@@ -68,17 +68,18 @@ void Server::onNewConnection()
     }
 }
 
+// Обработка входящих сообщений от клиентов
+// ToDo - могут приходить несколько json сообщений в одном пакете и нет этой обработки
 void Server::incomingMesg(ENTITIES::UUID uuid)
 {
     QJsonParseError error;
     QByteArray data = m_clients[uuid]->readAll();
-    data.split('}');
     QJsonDocument doc = QJsonDocument::fromJson(data, &error);
 
     if (error.error != QJsonParseError::NoError) {
         emit sendServerLog({"ERROR",
                             "uuid:" + QString::number(uuid) + ", ошибка парсинга json:" + error.errorString()});
-        qDebug() << Q_FUNC_INFO << data;
+        qDebug() << Q_FUNC_INFO << "ошибка парсинга json:" << data;
         return;
     }
     handlerIncomingJson(uuid, doc);
@@ -100,16 +101,14 @@ void Server::clientDisconect(ENTITIES::UUID uuid)
 
 void Server::clientErrors(ENTITIES::UUID uuid)
 {
-
     emit sendServerLog({"ERROR", "Ошибка сети у клиента " + QString::number(uuid)});
-    qInfo() << Q_FUNC_INFO << uuid;
 }
 
 void Server::handlerIncomingJson(ENTITIES::UUID uuid, QJsonDocument &doc)
 {
     auto obj = doc.object();
     if (!obj.contains("type")) {
-        qWarning() << Q_FUNC_INFO << "отсуствует поле <type>:";
+        emit sendServerLog({"WARRING", "отсуствует поле <type>"});
         return;
     }
 
@@ -122,7 +121,7 @@ void Server::handlerIncomingJson(ENTITIES::UUID uuid, QJsonDocument &doc)
     } else if (type == ENTITIES::Log::name()) {
         emit updateLog(uuid, ENTITIES::Log (obj));
     } else {
-        qWarning() << Q_FUNC_INFO << "пришел неизвестный тип сообщения:" << type;
+        emit sendServerLog({"WARRING", "пришел неизвестный тип сообщения:" + type});
     }
 }
 

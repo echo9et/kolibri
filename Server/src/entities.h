@@ -9,6 +9,8 @@
 namespace ENTITIES
 {
 
+// Структуры для хранения данных о клиентах, логах, статусе устройств и сетевых метриках
+
 using UUID = quint64;
 
 template <typename T>
@@ -141,8 +143,4 @@ struct Client {
 
 }
 
-Q_DECLARE_METATYPE(ENTITIES::InfoConnection)
 Q_DECLARE_METATYPE(ENTITIES::Log)
-Q_DECLARE_METATYPE(ENTITIES::Client)
-Q_DECLARE_METATYPE(ENTITIES::DeviceStatus)
-Q_DECLARE_METATYPE(ENTITIES::NetworkMetrics)

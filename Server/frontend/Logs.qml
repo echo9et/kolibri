@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
+// Виджет отображения логов сервера или клиента
 Item {
     id: root
     property var models: null

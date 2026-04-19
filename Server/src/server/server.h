@@ -5,6 +5,8 @@
 
 #include "src/entities.h"
 
+// @brief Класс для работы с сервером
+// Слушает входящие подключения, обрабатывает полученные данные от клиентов в Storage 
 class Server : public QObject
 {
     Q_OBJECT
@@ -37,7 +39,6 @@ private:
     void clientErrors(ENTITIES::UUID);
 
     void handlerIncomingJson(ENTITIES::UUID, QJsonDocument &);
-
 
     QTcpServer *m_tcpServer = Q_NULLPTR;
 

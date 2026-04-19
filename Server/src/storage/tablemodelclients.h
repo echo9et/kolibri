@@ -5,6 +5,8 @@
 
 #include "src/entities.h"
 
+// @brief Модель данных для отображения информации о клиентах в QML
+// Хранит список клиентов и их данные, обновляет их при получении новых данных от сервера
 class TableModelClients  : public QAbstractTableModel
 {
     Q_OBJECT

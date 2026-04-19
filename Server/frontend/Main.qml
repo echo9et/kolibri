@@ -2,12 +2,15 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
+// Основной виджет
+// пробрасываются модели и добавляются функции обработчики событий
 Window {
     width: 1200
     height: 480
     visible: true
     title: qsTr("Clients table")
-    // visibility: Window.FullScreen  // <-- Окно на весь экран
+    minimumWidth: 1200
+    minimumHeight: 480
 
     Logs {
         id: logs
@@ -23,8 +26,6 @@ Window {
         onClickShowServerLogs: function () {
             logsModel.showServerLogs()
         }
-
-
     }
 
     TableClients {
@@ -43,7 +44,7 @@ Window {
         anchors.right: parent.right
         anchors.margins: 16
         visible: !logs.visible
-        text: qsTr("Журнал")
+        text: "Журнал"
         highlighted: true
         onClicked: {
             logsModel.showServerLogs()

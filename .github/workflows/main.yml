@@ -1,0 +1,82 @@
+name: Build Qt Project (Windows)
+
+on:
+  push:
+    branches: [ main, dev ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.5.3'               
+          arch: 'win64_msvc2019_64'      
+          cache: true
+          cache-key-prefix: 'qt-cache-'
+
+      - name: Configure CMake (Client)
+        run: cmake -S Client -B build/Client -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build Client
+        run: cmake --build build/Client --config Release
+
+      - name: Deploy Client Qt DLLs
+        run: |
+          $exePath = (Get-ChildItem -Path build/Client -Filter "Client.exe" -Recurse | Select-Object -First 1).FullName
+          if (-not $exePath) { 
+            Write-Host "Available files in build/Client:"
+            Get-ChildItem -Path build/Client -Recurse -Filter "*.exe"
+            throw "No Client.exe found in build/Client" 
+          }
+          Write-Host "Found executable: $exePath"
+          mkdir deploy-client
+          windeployqt --dir deploy-client --no-translations --no-system-d3d-compiler $exePath
+          cp $exePath deploy-client/
+
+      - name: Upload Client Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-client
+          path: deploy-client/   
+
+      - name: Configure CMake (Server)
+        run: cmake -S Server -B build/Server -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build Server
+        run: cmake --build build/Server --config Release
+
+      - name: Deploy Server Qt DLLs
+        run: |
+          $exePath = (Get-ChildItem -Path build/Server -Filter "appServer.exe" -Recurse | Select-Object -First 1).FullName
+          if (-not $exePath) { 
+            Write-Host "Available files in build/Server:"
+            Get-ChildItem -Path build/Server -Recurse -Filter "*.exe"
+            throw "No appServer.exe found in build/Server" 
+          }
+          Write-Host "Found executable: $exePath"
+          mkdir deploy-server
+          windeployqt --dir deploy-server --no-translations --no-system-d3d-compiler --qmldir Server/frontend $exePath
+          cp $exePath deploy-server/
+          
+          # Copy QML files and qmldir
+          Write-Host "Copying QML module files..."
+          if (Test-Path "build/Server/Server/qmldir") {
+            Copy-Item "build/Server/Server/qmldir" deploy-server/
+            Write-Host "Copied qmldir"
+          }
+          if (Test-Path "build/Server/Server") {
+            Copy-Item -Path "build/Server/Server/*" -Destination deploy-server/ -Include "*.qml" -Recurse -Force
+            Write-Host "Copied QML files"
+          }
+     
+      - name: Upload Server Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-server
+          path: deploy-server/   

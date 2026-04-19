@@ -12,14 +12,21 @@ int main(int argc, char *argv[]) {
     QString host = "127.0.0.1";
     quint16 port = 12345;
 
-    if (argc == 3) {
-        host = QString::fromUtf8(argv[1]);
-
-        bool ok = false;
-        port = QString::fromUtf8(argv[2]).toUShort(&ok);
-        if (!ok) {
-            qWarning() << "Неверный номер порта";
-            return 1;
+    if (argc > 1) {
+        if (QString(argv[1]) == "--host" || argc > 3 && QString(argv[3]) == "--host") {
+            auto numArgIp = QString(argv[1]) == "--host" ? 2 : 4;
+            QString ip = QString(argv[numArgIp]);
+            if (!QHostAddress (ip).isNull()) {
+                host = ip;
+            }
+        }
+        if (QString(argv[1]) == "--port" || argc > 3 && QString(argv[3]) == "--port") {
+            auto numArgPort = QString(argv[1]) == "--port" ? 2 : 4;
+            bool ok = false;
+            auto parsedPort = QString::fromUtf8(argv[numArgPort]).toUShort(&ok);
+            if (ok && parsedPort > 0) {
+                port = parsedPort;
+            }
         }
     }
 

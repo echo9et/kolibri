@@ -6,6 +6,8 @@
 #include "./tablemodelclients.h"
 #include "./modellogs.h"
 
+// @brief Класс для хранения данных о клиентах, логах, статусе устройств и сетевых метриках
+// Получает данные от сервера через сигналы и обновляет модели для отображения в QML
 class Storage : public QObject
 {
     Q_OBJECT
