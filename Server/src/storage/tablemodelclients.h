@@ -12,6 +12,8 @@ class TableModelClients  : public QAbstractTableModel
     Q_OBJECT
     enum TableRoles{
         TableDataRole = Qt::UserRole + 1,
+        UUIDRole,
+        IsOnlineRole,
     };
 public:
     explicit TableModelClients(QObject *parent = nullptr);
@@ -27,10 +29,13 @@ public:
     void updateNetworkMetrics(ENTITIES::UUID, ENTITIES::NetworkMetrics &);
     void updateDeviceStatus(ENTITIES::UUID, ENTITIES::DeviceStatus &);
     void updateLogs(ENTITIES::UUID, ENTITIES::Log &);
-    void clientDisconected(ENTITIES::UUID);    
+    void clientDisconected(ENTITIES::UUID);
 
-    Q_INVOKABLE QList<ENTITIES::Log> *getLog(const QModelIndex&);
+    Q_INVOKABLE QList<ENTITIES::Log> *getLog(ENTITIES::UUID);
+    Q_INVOKABLE void dicsonectedClient(ENTITIES::UUID);
 
+signals:
+    void dicsonectedTo(ENTITIES::UUID);
 private:
     struct Data {
         static int countFiled() {return  9;};

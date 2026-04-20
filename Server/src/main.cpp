@@ -5,6 +5,7 @@
 
 #include "server/server.h"
 #include "storage/storage.h"
+#include "core.h"
 #include "src/storage/tablemodelclients.h"
 
 #include <QThread>
@@ -24,19 +25,19 @@ int main(int argc, char *argv[])
             port = parsedPort;
         } 
     }
-
-    Storage storage;
+    APP::Core appCore;
 
     Server *server = new Server;
     server->setPort(port);
 
+    QObject::connect(&appCore, &APP::Core::stopToClient, server, &Server::onStopToClient);
     // соединяем server signals к storage slots
-    QObject::connect(server, &Server::sendServerLog,        &storage, &Storage::onLog);
-    QObject::connect(server, &Server::updateLog,            &storage, &Storage::onUpdateLog);
-    QObject::connect(server, &Server::newConnection,        &storage, &Storage::onNewConnection);
-    QObject::connect(server, &Server::clientDisconected,    &storage, &Storage::onClientDisconected);
-    QObject::connect(server, &Server::updateDeviceStatus,   &storage, &Storage::onUpdateDeviceStatus);
-    QObject::connect(server, &Server::updateNetworkMetrics, &storage, &Storage::onUpdateNetworkMetrics);
+    QObject::connect(server, &Server::sendServerLog,        appCore.getStorage(), &Storage::onLog);
+    QObject::connect(server, &Server::updateLog,            appCore.getStorage(), &Storage::onUpdateLog);
+    QObject::connect(server, &Server::newConnection,        appCore.getStorage(), &Storage::onNewConnection);
+    QObject::connect(server, &Server::clientDisconected,    appCore.getStorage(), &Storage::onClientDisconected);
+    QObject::connect(server, &Server::updateDeviceStatus,   appCore.getStorage(), &Storage::onUpdateDeviceStatus);
+    QObject::connect(server, &Server::updateNetworkMetrics, appCore.getStorage(), &Storage::onUpdateNetworkMetrics);
 
     {
         // Запускаем сервер в отдельном потоке, чтобы не блокировать UI
@@ -44,13 +45,13 @@ int main(int argc, char *argv[])
         server->moveToThread(thread);
         QObject::connect(thread, &QThread::started, server, &Server::onListen);
         QObject::connect(server, &Server::finished, server, &QObject::deleteLater);
+        // При неудачной попытке подключиться к порту - закроем приложение
         QObject::connect(server, &Server::errorListen, &app, &QGuiApplication::deleteLater);
         // Убедимся, что сервер будет корректно удалён при завершении приложения
         QObject::connect(&app, &QGuiApplication::aboutToQuit, server, &QObject::deleteLater);
 
         thread->start();
     }
-
 
     QQmlApplicationEngine engine;
     QObject::connect(
@@ -61,8 +62,9 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
 
     // Передаем модели в QML
-    engine.rootContext()->setContextProperty("clientsModel", storage.getModelClients());
-    engine.rootContext()->setContextProperty("logsModel", storage.getModelLogs());
+    engine.rootContext()->setContextProperty("clientsModel", appCore.getModelClients());
+    engine.rootContext()->setContextProperty("logsModel", appCore.getModelLogs());
+    engine.rootContext()->setContextProperty("appCore", &appCore);
     engine.loadFromModule("Server", "Main");
 
     return QCoreApplication::exec();

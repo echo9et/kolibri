@@ -29,6 +29,7 @@ signals:
 
 public slots:
     void onListen();
+    void onStopToClient(ENTITIES::UUID);
 
 private slots:
     void onNewConnection();

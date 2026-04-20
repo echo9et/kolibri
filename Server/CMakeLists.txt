@@ -23,6 +23,7 @@ qt_add_qml_module(appServer
     QML_FILES
         frontend/Main.qml
         frontend/Logs.qml
+        frontend/Footer.qml
         frontend/TableClients.qml
 )
 

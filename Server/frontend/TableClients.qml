@@ -31,7 +31,7 @@ Item {
 
         model: root.models
 
-        columnWidthProvider: function(column) { return root.width / models.columnCount() }
+        columnWidthProvider: function(column) { return root.width / models.columnCount() + 1 }
 
         delegate: Item {
             implicitHeight: 40
@@ -46,6 +46,7 @@ Item {
             }
 
             Rectangle {
+                id: status
                 visible: column === 1
                 anchors.centerIn: parent
                 width: 16
@@ -63,7 +64,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    onClickRow(root.models.index(row,0))
+                    onClickRow(model.uuid, model.isOnline)
                 }
             }
         }

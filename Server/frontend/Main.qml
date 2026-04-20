@@ -17,40 +17,45 @@ Window {
         models: logsModel
         anchors.fill: parent
         visible: false
-
-        onClickClose: function () {
-            logs.visible = false
-            tableClients.visible = true
-        }
-
-        onClickShowServerLogs: function () {
-            logsModel.showServerLogs()
-        }
     }
 
     TableClients {
         id: tableClients
         models: clientsModel
         anchors.fill: parent
-        onClickRow : function (idx) {
-            logsModel.setLog(clientsModel.getLog(idx))
-            logs.visible = true
-            tableClients.visible = false
+        onClickRow : function (uuid, isOnline) {
+            if (isOnline) {
+                footer.chooseUUID = uuid
+            } else {
+                footer.chooseUUID = null;
+            }
+
+            logsModel.setLog(clientsModel.getLog(uuid))
+            showLog(true)
         }
     }
 
-    Button {
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.margins: 16
-        visible: !logs.visible
-        text: "Журнал"
-        highlighted: true
-        onClicked: {
+    Footer {
+        id: footer
+        chooseUUID: null
+        isLogVisible: logs.visible
+        onClickDisconectedClient: function() {
+            appCore.stopClient(footer.chooseUUID)
+            showLog(false)
+        }
+
+        onClickClose: function () {
+            showLog(false)
+        }
+
+        onClickShowServerLogs: function () {
             logsModel.showServerLogs()
-            logs.visible = true
-            tableClients.visible = false
+            showLog(true)
         }
     }
 
+    function showLog(status) {
+        logs.visible = status
+        tableClients.visible = !status
+    }
 }

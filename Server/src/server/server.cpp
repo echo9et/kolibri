@@ -38,6 +38,14 @@ void Server::onListen()
     emit sendServerLog({"DEBUG", "server слушает 0.0.0.0:" + QString::number(m_port)});
 }
 
+void Server::onStopToClient(ENTITIES::UUID uuid)
+{
+    if (m_clients.contains(uuid)) {
+        m_clients[uuid]->close();
+        clientDisconect(uuid);
+    }
+}
+
 void Server::onNewConnection()
 {
     static ENTITIES::UUID counterUUID = 0;

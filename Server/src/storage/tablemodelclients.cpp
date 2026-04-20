@@ -20,44 +20,33 @@ int TableModelClients::columnCount(const QModelIndex &) const
 QVariant TableModelClients::data(const QModelIndex &index, int role) const
 {
     switch (role) {
-    case TableDataRole:
-    {
-        auto row = m_data.at(index.row());
-        switch (index.column()) {
-        case 0:
-            return row.uuid;
-            break;
-        case 1:
-            return row.client.infoConnection.status;
-            break;
-        case 2:
-            return row.client.infoConnection.getHost();
-            break;
-        case 3:
-            return row.client.networkMetrics.getBandwidth();
-            break;
-        case 4:
-            return row.client.networkMetrics.getLatency();
-            break;
-        case 5:
-            return row.client.networkMetrics.getPacketLoss();
-            break;
-        case 6:
-            return row.client.deviceStatus.getUptime();
-            break;
-        case 7:
-            return row.client.deviceStatus.getCpuUsage();
-            break;
-        case 8:
-            return row.client.deviceStatus.getMemoryUsage();
-            break;
-        default:
-            return '*';
-            break;
+        case TableDataRole: {
+            auto row = m_data.at(index.row());
+            switch (index.column()) {
+                case 0:
+                    return row.uuid;
+                case 1:
+                    return row.client.infoConnection.status;
+                case 2:
+                    return row.client.infoConnection.getHost();
+                case 3:
+                    return row.client.networkMetrics.getBandwidth();
+                case 4:
+                    return row.client.networkMetrics.getLatency();
+                case 5:
+                    return row.client.networkMetrics.getPacketLoss();
+                case 6:
+                    return row.client.deviceStatus.getUptime();
+                case 7:
+                    return row.client.deviceStatus.getCpuUsage();
+                case 8:
+                    return row.client.deviceStatus.getMemoryUsage();
+            }
         }
-    }
-    default:
-        break;
+        case UUIDRole:
+            return m_data.at(index.row()).uuid;
+        case IsOnlineRole:
+            return m_data.at(index.row()).client.infoConnection.status;
     }
     return QVariant();
 }
@@ -88,7 +77,9 @@ QHash<int, QByteArray> TableModelClients::roleNames() const
 {
     QHash<int, QByteArray> roles;
     roles[Qt::DisplayRole] = "display";
-    roles[TableDataRole] = "tabledata";
+    roles[TableDataRole]   = "tabledata";
+    roles[UUIDRole]        = "uuid";
+    roles[IsOnlineRole]      = "isOnline";
     return roles;
 }
 
@@ -119,7 +110,6 @@ void TableModelClients::updateLogs(UUID uuid, Log &log)
 {
     if (m_data.size() > uuid) {
         m_data[uuid].client.logs.append(qMove(log));
-        // dataUpdate(uuid, {Roles::LogsRole});
     }
 }
 
@@ -131,10 +121,15 @@ void TableModelClients::clientDisconected(UUID uuid)
     }
 }
 
-QList<ENTITIES::Log> *TableModelClients::getLog(const QModelIndex &idx)
+QList<ENTITIES::Log> *TableModelClients::getLog(ENTITIES::UUID uuid)
 {
-    if (idx.row() >= m_data.size()) {
+    if (uuid >= m_data.size()) {
         return Q_NULLPTR;
     }
-    return &m_data[idx.row()].client.logs;
+    return &m_data[uuid].client.logs;
+}
+
+void TableModelClients::dicsonectedClient(ENTITIES::UUID uuid)
+{
+    emit dicsonectedTo(uuid);
 }

@@ -9,12 +9,6 @@
 class ModelLogs : public QAbstractListModel
 {
     Q_OBJECT
-    enum LogsRoles{
-        DataRole = Qt::UserRole + 1,
-        MessageRole,
-        SeverityRole
-
-    };
 public:
     explicit ModelLogs(QObject *parent = nullptr);
 
@@ -29,6 +23,12 @@ public:
     Q_INVOKABLE void showServerLogs();
 
 private:
+    enum LogsRoles{
+        DataRole = Qt::UserRole + 1,
+        MessageRole,
+        SeverityRole
+    };
+
     QList<ENTITIES::Log> *p_data = nullptr;
     QList<ENTITIES::Log> *p_serverLogs = nullptr;
 };
